@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() &&
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+          (request.auth.token.email == "oliverjs090@gmail.com")
+        );
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.authorUid;
+    }
+
+    function isAuthorizedViewer() {
+      return isAuthenticated() && 'email' in request.auth.token && exists(/databases/$(database)/documents/authorized_emails/$(request.auth.token.email));
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /documents/{docId} {
+      allow read: if isAuthenticated() && (resource.data.authorUid == request.auth.uid || isAdmin() || isAuthorizedViewer());
+      allow create: if isAuthenticated() && request.resource.data.authorUid == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (isDocOwner() || isAdmin());
+    }
+
+    match /timeline_events/{eventId} {
+      allow read: if isAuthenticated() && (resource.data.authorUid == request.auth.uid || isAdmin() || isAuthorizedViewer());
+      allow create: if isAuthenticated() && request.resource.data.authorUid == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (isDocOwner() || isAdmin());
+    }
+
+    match /correspondence/{corrId} {
+      allow read: if isAuthenticated() && (resource.data.authorUid == request.auth.uid || isAdmin() || isAuthorizedViewer());
+      allow create: if isAuthenticated() && request.resource.data.authorUid == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (isDocOwner() || isAdmin());
+    }
+
+    match /authorized_emails/{emailId} {
+      allow read: if isAuthenticated() && (isAdmin() || request.auth.token.email == emailId);
+      allow write: if isAdmin();
+    }
+
+    match /allegations/{allegationId} {
+      allow read: if isAuthenticated() && (resource.data.authorUid == request.auth.uid || isAdmin() || isAuthorizedViewer());
+      allow create: if isAuthenticated() && request.resource.data.authorUid == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (isDocOwner() || isAdmin());
+    }
+  }
+}

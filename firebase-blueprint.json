@@ -1,0 +1,116 @@
+{
+  "entities": {
+    "Document": {
+      "title": "Document",
+      "description": "A case document or piece of evidence.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the document" },
+        "type": { "type": "string", "description": "Type of document (e.g., Medical, Evidence, Court Order)" },
+        "pages": { "type": "number", "description": "Number of pages" },
+        "description": { "type": "string", "description": "Summary or description of the document" },
+        "fileUrl": { "type": "string", "description": "URL to the uploaded file" },
+        "authorUid": { "type": "string", "description": "UID of the user who uploaded it" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of upload" }
+      },
+      "required": ["name", "type", "description", "authorUid", "createdAt"]
+    },
+    "TimelineEvent": {
+      "title": "Timeline Event",
+      "description": "An event in the case timeline.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "description": "Date of the event (e.g., '15 Oct 2024')" },
+        "title": { "type": "string", "description": "Title of the event" },
+        "description": { "type": "string", "description": "Detailed description" },
+        "category": { "type": "string", "description": "Category (legal, alert, document, medical, general)" },
+        "authorUid": { "type": "string", "description": "UID of the user who created it" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation" }
+      },
+      "required": ["date", "title", "description", "category", "authorUid", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user of the application.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role", "createdAt"]
+    },
+    "Correspondence": {
+      "title": "Correspondence",
+      "description": "A record of communication (email, text, letter).",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "description": "Date of the correspondence" },
+        "type": { "type": "string", "description": "Type of correspondence (e.g., Email, Text Message, Letter)" },
+        "sender": { "type": "string", "description": "Sender of the correspondence" },
+        "recipient": { "type": "string", "description": "Recipient of the correspondence" },
+        "subject": { "type": "string", "description": "Subject or brief summary" },
+        "content": { "type": "string", "description": "Full content of the correspondence" },
+        "status": { "type": "string", "description": "Status (e.g., Sent, Received, Logged)" },
+        "authorUid": { "type": "string", "description": "UID of the user who logged it" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation" }
+      },
+      "required": ["date", "type", "sender", "recipient", "subject", "content", "status", "authorUid", "createdAt"]
+    },
+    "AuthorizedEmail": {
+      "title": "Authorized Email",
+      "description": "An email address authorized to view the case files.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["viewer", "lawyer"] },
+        "addedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role", "addedBy", "createdAt"]
+    },
+    "Allegation": {
+      "title": "Allegation",
+      "description": "An allegation made by the opposing party.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Short title of the allegation" },
+        "description": { "type": "string", "description": "Full description of the allegation" },
+        "date": { "type": "string", "description": "Date of the alleged event" },
+        "source": { "type": "string", "description": "Source document of the allegation" },
+        "status": { "type": "string", "description": "Status of defense preparation" },
+        "response": { "type": "string", "description": "Drafted response or defense" },
+        "linkedEvidence": { "type": "array", "items": { "type": "string" }, "description": "List of linked evidence document names" },
+        "authorUid": { "type": "string", "description": "UID of the user who created it" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation" }
+      },
+      "required": ["title", "description", "date", "source", "status", "authorUid", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/documents/{documentId}": {
+      "schema": { "$ref": "#/entities/Document" },
+      "description": "Stores all case documents."
+    },
+    "/timeline_events/{eventId}": {
+      "schema": { "$ref": "#/entities/TimelineEvent" },
+      "description": "Stores all timeline events."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles and roles."
+    },
+    "/correspondence/{correspondenceId}": {
+      "schema": { "$ref": "#/entities/Correspondence" },
+      "description": "Stores all correspondence records."
+    },
+    "/authorized_emails/{email}": {
+      "schema": { "$ref": "#/entities/AuthorizedEmail" },
+      "description": "Stores emails of users (like lawyers) who are allowed to view the case."
+    },
+    "/allegations/{allegationId}": {
+      "schema": { "$ref": "#/entities/Allegation" },
+      "description": "Stores allegations and defense preparation data."
+    }
+  }
+}
